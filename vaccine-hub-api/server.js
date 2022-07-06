@@ -1,20 +1,29 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-const {NotFoundError} = require('./utils/errors')
+const {BadRequestError, NotFoundError} = require('./utils/errors')
 
-const server = express()
+const app = express()
 
-server.use(morgan('tiny'));
-server.use(express.json());
-server.use(cors());
+app.use(morgan('tiny'));
+app.use(express.json());
+app.use(cors());
 
-server.use((req,res,next) => {
+app.use((req,res,next) => {
     return next(new NotFoundError());
+})
+
+app.use((err,req,res,next) => {
+    const status = err.status || 500;
+    const message = err.message
+
+    return res.status(status).json({
+        error: {message, status}
+    })
 })
 
 const PORT = process.env.port || 3001
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`🚀 Server listening on http://localhost:${PORT}`)
 });
