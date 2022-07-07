@@ -4,16 +4,39 @@ const bcrypt = require('bcrypt');
 const {UnauthorizedError, BadRequestError} = require('../utils/errors');
 
 class User {
-    static async login(credentials) {
-        /* user should submit email and password,
-           if any of these fields are missing then throw an error.
 
-           lookup the user in the db by email,
-           if a user is found, compare the submitted password
-           with the password in the database
-           if there is a match, return the user
-        
-           if any of this goes wrong, throw and error*/
+    static async makePublicUser(user) {
+        return {
+            id: user.id,
+            email: user.email,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            location: user.location,
+            date: user.date
+        }
+    }
+
+    static async login(credentials) {
+        //user should submit their email and password
+        //if any of these fields are missing, throw an error
+        const requiredFields = ['password', 'email']
+        requiredFields.forEach(field => {
+            if (!credentials.hasOwnProperty(field)) {
+                throw new BadRequestError(`Missing ${field} in request body.`);
+            }
+        })
+        // lookup the user in the db by email
+        const user = await User.fetchUserByEmail(credentials.email)
+        // if a user is found, compare the submitted password
+        // with the password in the db
+        // if there is a match, return the user
+        if (user) {
+            const isValid = await bcrypt.compare(credentials.password, user.password)
+            if (isValid) {
+                return User.makePublicUser(user)
+            }
+        }
+        // if any of this goes wrong, throw an error
         throw new UnauthorizedError('Invalid email/password combo')
     }
 
@@ -60,7 +83,7 @@ class User {
 
         const user = result.rows[0]
 
-        return user;
+        return User.makePublicUser(user);
     }
 
     static async fetchUserByEmail(email) {
