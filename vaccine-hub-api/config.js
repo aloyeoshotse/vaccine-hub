@@ -22,5 +22,5 @@ console.log('---')
 
 module.exports = {
     PORT,
-    getDatabaseURI,
+    getDatabaseURI
 }
