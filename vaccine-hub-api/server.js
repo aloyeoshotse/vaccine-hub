@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const {BadRequestError, NotFoundError} = require('./utils/errors')
+const { PORT } = require('./config')
 
 const app = express()
 
@@ -22,7 +23,7 @@ app.use((err,req,res,next) => {
     })
 })
 
-const PORT = process.env.port || 3001
+// const PORT = process.env.port || 3001
 
 app.listen(PORT, () => {
     console.log(`🚀 Server listening on http://localhost:${PORT}`)
